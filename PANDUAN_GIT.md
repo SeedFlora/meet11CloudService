@@ -1,5 +1,7 @@
 # Git untuk repo Lab 11
 
+**Kebijakan kelas:** Lab ini latihan formatif, tanpa tugas, nilai, atau penyerahan terpisah. Satu proyek besar dikerjakan oleh kelompok **3 orang**, dengan presentasi checkpoint minggu 7 (UTS) dan hasil akhir minggu 14 (UAS). Simpan hasil lab hanya bila berguna sebagai referensi atau bukti proses proyek. Baca [brief proyek kelompok](PROYEK_KELOMPOK.md). Bobot resmi tetap mengikuti RPS/LMS.
+
 Repo materi dosen: https://github.com/SeedFlora/meet11CloudService. Gunakan **Use this template** di GitHub untuk membuat repo milik sendiri (atau fork jika tombol template belum tersedia). Buka Codespaces dari repo milik sendiri bila memakai browser. Di komputer lokal, clone **URL repo milik sendiri**, lalu buka terminal pada root clone. `git remote -v` harus menunjuk repo Anda sebelum push.
 
 ```bash

@@ -1,5 +1,19 @@
 # Lab 11 — RAG dengan pgvector, chat, dan sitasi
 
+<!-- lecture-materials:start -->
+
+## Materi teori sebelum praktikum
+
+- [Pertemuan 11: NLP dan RAG](slides/Teori_Pertemuan_11.pptx)
+- [Pertemuan 12: Proyek Cloud Native](slides/Teori_Pertemuan_12.pptx)
+- [Pertemuan 13: Presentasi Proyek](slides/Teori_Pertemuan_13.pptx)
+
+Slide menghubungkan konsep, kasus kerja, bacaan/video resmi, dan langkah lab. Sesi 12–13 dipakai untuk menyatukan dan mempresentasikan satu proyek kelompok.
+
+<!-- lecture-materials:end -->
+
+**Kebijakan kelas:** Lab ini latihan formatif, tanpa tugas, nilai, atau penyerahan terpisah. Satu proyek besar dikerjakan oleh kelompok **3 orang**, dengan presentasi checkpoint minggu 7 (UTS) dan hasil akhir minggu 14 (UAS). Simpan hasil lab hanya bila berguna sebagai referensi atau bukti proses proyek. Baca [brief proyek kelompok](PROYEK_KELOMPOK.md). Bobot resmi tetap mengikuti RPS/LMS.
+
 **Capaian:** memotong dokumen, membuat embedding, menyimpan dan mencari vector dengan pgvector/HNSW, memakai fungsi `match_documents`, menyusun jawaban berbasis sumber, menguji API dan chat UI, lalu membandingkan latensi serta biaya. Jalur utama berjalan lokal tanpa akun cloud atau API berbayar.
 
 Slide praktikum sesi 11 juga memperlihatkan rancangan cloud dengan TypeScript, Supabase, Groq, dan Next.js. Untuk praktik kelas yang dapat dijalankan dari folder ini, gunakan kode Python `rag.py`, `app.py`, `benchmark.py`, dan `index.html` di bawah. Contoh TypeScript pada slide dipakai untuk membahas rancangan integrasi cloud opsional; file TypeScript tersebut tidak disertakan sebagai aplikasi siap jalan.
@@ -82,4 +96,4 @@ Rujukan: [pgvector index usage](https://github.com/pgvector/pgvector#troubleshoo
 
 `benchmark.py` mengulang tiga pertanyaan lima kali secara default (15 sampel) dan mencetak p50 median serta p95 nearest-rank. Setelah Docker, ingest, dan Uvicorn hidup, jalankan PowerShell `.\.venv\Scripts\python -B tests\challenge.py` atau Bash `.venv/bin/python -B tests/challenge.py`; hasil uji **10 PASS, 0 FAIL**.
 
-Panduan: [modul mahasiswa dan kunci](MODUL_MAHASISWA.md), [panduan dosen](PANDUAN_DOSEN.md), [panduan Git](PANDUAN_GIT.md). Screenshot Docker Desktop, web, API, dan perintah berada di `screenshots/`.
+Panduan: [modul mahasiswa dan kunci](MODUL_MAHASISWA.md), [panduan Git](PANDUAN_GIT.md). Screenshot Docker Desktop, web, API, dan perintah berada di `screenshots/`.

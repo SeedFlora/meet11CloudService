@@ -1,6 +1,8 @@
 # Modul Mahasiswa Lab 11 — RAG dengan pgvector
 
-**Sesi RPS:** 11 · **Mode utama:** Docker + Python lokal · **Hasil yang dikumpulkan:** pipeline, sitasi, benchmark, penjelasan keamanan, dan commit Git.
+**Kebijakan kelas:** Lab ini latihan formatif, tanpa tugas, nilai, atau penyerahan terpisah. Satu proyek besar dikerjakan oleh kelompok **3 orang**, dengan presentasi checkpoint minggu 7 (UTS) dan hasil akhir minggu 14 (UAS). Simpan hasil lab hanya bila berguna sebagai referensi atau bukti proses proyek. Baca [brief proyek kelompok](PROYEK_KELOMPOK.md). Bobot resmi tetap mengikuti RPS/LMS.
+
+**Sesi RPS:** 11 · **Mode utama:** Docker + Python lokal · **Bukti latihan opsional untuk proyek:** pipeline, sitasi, benchmark, penjelasan keamanan, dan commit Git.
 
 **Jenis bukti visual:** Docker Desktop, chat, endpoint JSON, dan respons OpenAPI adalah screenshot aplikasi yang dijalankan. Gambar terminal berlatar gelap menyajikan ulang transkrip perintah yang sudah dijalankan agar terbaca, bukan screenshot terminal langsung. Layanan cloud/LLM opsional tidak memiliki bukti run per langkah dalam modul ini.
 
