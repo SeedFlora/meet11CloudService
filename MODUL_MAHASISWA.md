@@ -2,6 +2,8 @@
 
 **Sesi RPS:** 11 · **Mode utama:** Docker + Python lokal · **Hasil yang dikumpulkan:** pipeline, sitasi, benchmark, penjelasan keamanan, dan commit Git.
 
+**Jenis bukti visual:** Docker Desktop, chat, endpoint JSON, dan respons OpenAPI adalah screenshot aplikasi yang dijalankan. Gambar terminal berlatar gelap menyajikan ulang transkrip perintah yang sudah dijalankan agar terbaca, bukan screenshot terminal langsung. Layanan cloud/LLM opsional tidak memiliki bukti run per langkah dalam modul ini.
+
 ## Tujuan dan konsep
 
 Anda akan membuat *retrieval-augmented generation* (RAG) sederhana: dokumen `docs/*.md` → chunk → vector 384 dimensi → PostgreSQL pgvector/HNSW → top-K sumber → jawaban dengan sitasi. Mode `hash` adalah baseline leksikal tanpa unduhan model; mode MiniLM semantik opsional memakai model lokal. Tanpa kunci LLM, jawaban ekstraktif tetap berfungsi dan bersitasi. Sitasi menunjukkan sumber yang dipakai, bukan jaminan bahwa jawabannya selalu benar.
@@ -69,6 +71,14 @@ Di Bash, gunakan `curl -i http://127.0.0.1:8011/api/ask -H 'Content-Type: applic
 
 * **Langkah:** Saat Uvicorn hidup, buka `http://127.0.0.1:8011/docs` dan perluas `POST /api/ask`. **Fungsi:** Menunjukkan kontrak API RAG yang sama dengan UI/terminal. **Cara kerja:** FastAPI menghasilkan halaman OpenAPI dari model request/response pada server. **Baca hasil:** Baca field `question` dan `top_k`, lalu bandingkan respons dengan hasil web.
 
+![Respons POST RAG yang berhasil dari OpenAPI lokal](screenshots/11_api_200_respons.png)
+
+* **Langkah:** Kirim `{"question":"Apa perbedaan image dan container?","top_k":3}` dengan `Invoke-RestMethod` atau tombol **Try it out → Execute** pada `/docs`. **Fungsi:** Memeriksa jalur API secara terpisah dari chat web. **Cara kerja:** FastAPI memvalidasi JSON, mengambil tiga sumber melalui pgvector, lalu mengirim jawaban ekstraktif. **Baca hasil:** HTTP **200**, jawaban berpenanda `[S1]`, dan `sources` dengan `source_file`, `chunk_index`, serta `distance`. Screenshot ini berasal dari respons server lokal yang dijalankan.
+
+![Validasi top_k nol memberi HTTP 422](screenshots/11_api_422_respons.png)
+
+* **Langkah:** Ulangi POST dengan `{"question":"uji","top_k":0}`. **Fungsi:** Menguji batas input sebelum query database. **Cara kerja:** Pydantic menolak `top_k` di luar 1–10; handler jawaban tidak dipanggil. **Baca hasil:** HTTP **422**, `loc` menunjuk `body.top_k`, dan pesan meminta nilai minimal 1. Screenshot ini adalah respons server lokal yang dijalankan.
+
 **Langkah 4 — benchmark.** Tiga pertanyaan contoh menghasilkan durasi dan jumlah sumber. Hasil tiap mesin dapat berubah. Baris `Hasil:` pada gambar menunjuk path sementara mesin uji; pada komputer Anda, lokasi file benchmark mengikuti folder kerja dan konfigurasi sendiri.
 
 ![Keluaran benchmark 15 sampel aktual](screenshots/11_benchmark_aktual.png)
@@ -130,19 +140,35 @@ Kasus: staf operasi perlu jawaban cepat dari tiga dokumen kelas dan harus dapat 
 
 ![Keluaran Docker Compose dari run lokal](screenshots/11_docker_output.png)
 
-*Perintah/tindakan:* `docker compose ps`. *Fungsi:* memeriksa nama service, image, health, dan pemetaan port tanpa membuka GUI. *Cara kerja:* Compose membaca keadaan container yang aktif. *Baca hasil:* db healthy dan `127.0.0.1:5433->5432/tcp`; output aktual ditata ulang agar terbaca.
+*Perintah/tindakan:* `docker compose ps`. *Fungsi:* memeriksa nama service, image, health, dan pemetaan port tanpa membuka GUI. *Cara kerja:* Compose membaca keadaan container yang aktif. *Baca hasil:* db healthy dan `127.0.0.1:5433->5432/tcp`; output aktual ditata ulang agar terbaca, bukan screenshot terminal langsung.
 
 ![Ringkasan ingest yang dijalankan](screenshots/11_ingest_output.png)
 
-*Perintah/tindakan:* `.\.venv\Scripts\python rag.py ingest` atau `.venv/bin/python rag.py ingest`. *Fungsi:* membangun indeks korpus. *Cara kerja:* script membaca tiga dokumen, membuat chunk/vektor, dan menulis metadata ke pgvector. *Baca hasil:* 3 file, 6 chunk, mode hash, 500/50; keluaran aktual ditata ulang untuk modul.
+*Perintah/tindakan:* `.\.venv\Scripts\python rag.py ingest` atau `.venv/bin/python rag.py ingest`. *Fungsi:* membangun indeks korpus. *Cara kerja:* script membaca tiga dokumen, membuat chunk/vektor, dan menulis metadata ke pgvector. *Baca hasil:* 3 file, 6 chunk, mode hash, 500/50; keluaran aktual ditata ulang untuk modul, bukan screenshot terminal langsung.
 
 ![Web RAG dengan dua pertanyaan dan sumber yang benar-benar dijalankan](screenshots/11_web_dua_pertanyaan.png)
 
 *Perintah/tindakan:* jalankan Uvicorn, buka web, kirim dua pertanyaan. *Fungsi:* menunjukkan percakapan dan sitasi. *Cara kerja:* UI POST `/api/ask`, server mengambil top-K pgvector lalu menyusun jawaban ekstraktif. *Baca hasil:* `[S1]` pada kalimat, nama file serta jarak pada daftar sumber; periksa isi sumber sebelum memakai jawaban.
 
+![Liveness API RAG setelah server hidup](screenshots/11_health_aktual.png)
+
+*Perintah/tindakan:* buka `http://127.0.0.1:8011/health` atau jalankan `Invoke-RestMethod http://127.0.0.1:8011/health`. *Fungsi:* memeriksa proses HTTP. *Cara kerja:* endpoint menjawab tanpa memeriksa isi indeks. *Baca hasil:* `status=ok`; ini belum menjamin query RAG siap. Tangkapan layar adalah halaman JSON lokal aktual.
+
+![Readiness API RAG sesudah ingest](screenshots/11_ready_aktual.png)
+
+*Perintah/tindakan:* buka `http://127.0.0.1:8011/ready` atau jalankan `Invoke-RestMethod http://127.0.0.1:8011/ready`. *Fungsi:* memastikan DB dan indeks siap dipakai. *Cara kerja:* server memeriksa koneksi, jumlah chunk, dan kesesuaian mode embedding. *Baca hasil:* `status=ready`, `chunks=6`, dan model hash pada korpus bawaan; screenshot berasal dari halaman JSON lokal aktual.
+
 ![OpenAPI dari server yang dijalankan](screenshots/11_openapi_aktual.png)
 
 *Perintah/tindakan:* buka `http://127.0.0.1:8011/docs`. *Fungsi:* melihat kontrak API. *Cara kerja:* FastAPI menghasilkan dokumentasi dari model request dan endpoint. *Baca hasil:* temukan `/health`, `/ready`, dan `POST /api/ask` dengan `question/top_k`.
+
+![POST API lokal berhasil dan memberi sumber](screenshots/11_api_200_respons.png)
+
+*Perintah/tindakan:* POST `{"question":"Apa perbedaan image dan container?","top_k":3}` ke `/api/ask`, melalui PowerShell `Invoke-RestMethod` atau **Execute** pada `/docs`. *Fungsi:* membuktikan API menjawab di luar antarmuka chat. *Cara kerja:* server memvalidasi payload, memanggil retriever pgvector, lalu membangun jawaban dari chunk. *Baca hasil:* HTTP 200, jawaban `[S1]`, tiga sumber, dan jarak.
+
+![POST API lokal menolak top_k nol](screenshots/11_api_422_respons.png)
+
+*Perintah/tindakan:* POST `{"question":"uji","top_k":0}` ke `/api/ask`. *Fungsi:* menguji validasi batas parameter. *Cara kerja:* Pydantic menolak nilai sebelum query ke pgvector. *Baca hasil:* HTTP 422 dengan lokasi error `body.top_k` dan syarat minimal 1.
 
 ![Checker end-to-end RAG lokal](screenshots/11_challenge_output.png)
 

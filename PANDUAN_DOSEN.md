@@ -2,6 +2,8 @@
 
 **Repo materi:** `SeedFlora/meet11CloudService` · **durasi contoh:** 120 menit · **jalur wajib:** Docker Compose + Python hash embedding/ekstraktif tanpa akun dan tanpa API berbayar. Jalur semantic model, Groq, Supabase, dan Vercel adalah diskusi/eksperimen opsional yang memiliki kebutuhan perangkat, akun, serta keamanan tersendiri.
 
+**Jenis bukti visual:** Docker Desktop, web RAG, JSON endpoint, dan OpenAPI adalah tangkapan aplikasi nyata. Gambar terminal berlatar gelap adalah transkrip output yang ditata ulang untuk keterbacaan, bukan screenshot terminal langsung. Jalur cloud opsional tidak diklaim memiliki screenshot langkah yang diuji.
+
 ## Hasil belajar dan kasus kerja
 
 Mahasiswa menelusuri dokumen → chunk → vector 384 dimensi → pgvector/HNSW → top-K sumber → jawaban bersitasi. Kasus kerja adalah asisten pengetahuan internal untuk staf operasi: jawaban harus dapat dilacak ke file sumber, dan endpoint readiness harus menunjukkan ketika indeks belum siap. Bedakan retrieval yang menemukan teks dekat dari verifikasi bahwa isi jawaban benar. Mode `hash` adalah baseline leksikal untuk latihan, bukan embedding semantik produksi.
@@ -37,7 +39,23 @@ Komputer verifikasi menjalankan image `pgvector/pgvector:pg16` healthy, Python d
 
 **C. Liveness/readiness.** `GET /health` hanya membuktikan proses HTTP hidup. `GET /ready` menanyakan DB, jumlah chunk, dan nama mode embedding; hasil sehat `status=ready` dan `chunks>0`. Jika DB mati, kosong, atau mode berubah tanpa ingest, readiness 503. Kode tidak mengembalikan password/connection string pada JSON sukses.
 
+![Liveness API pada browser lokal](screenshots/11_health_aktual.png)
+
+*Command:* buka `/health` atau jalankan `Invoke-RestMethod http://127.0.0.1:8011/health`. *Fungsi:* menguji proses FastAPI. *Cara kerja:* endpoint menjawab tanpa query indeks. *Baca hasil:* HTTP 200 dan `status=ok`; belum berarti DB dan dokumen siap. Gambar adalah tangkapan browser dari server lokal.
+
+![Readiness API setelah ingest korpus](screenshots/11_ready_aktual.png)
+
+*Command:* buka `/ready` atau jalankan `Invoke-RestMethod http://127.0.0.1:8011/ready`. *Fungsi:* memeriksa kemampuan menjawab query RAG. *Cara kerja:* endpoint membaca DB, jumlah chunk, dan mode embedding yang tersimpan. *Baca hasil:* `status=ready`, enam chunk, dan mode hash pada dataset bawaan; screenshot browser aktual.
+
 **D. API dan UI.** `POST /api/ask` dengan `{"question":"Apa perbedaan image dan container?","top_k":3}` memberi jawaban ekstraktif, `mode=extractive`, tiga sumber, `ref=S1...S3`, nama file, bagian, jarak. Web `index.html` menaruh respons dengan `textContent` sehingga teks dokumen tidak dieksekusi sebagai HTML. Ajukan pertanyaan kedua tentang RLS dan minta mahasiswa cocokkan klaim dengan `docs/supabase_security.md`. `top_k:0` memberi HTTP **422** dari validasi Pydantic. Sitasi adalah petunjuk sumber, bukan jaminan kebenaran.
+
+![POST RAG valid dengan respons 200 dan sitasi](screenshots/11_api_200_respons.png)
+
+*Command:* POST `{"question":"Apa perbedaan image dan container?","top_k":3}` via `Invoke-RestMethod` atau **Execute** pada OpenAPI. *Fungsi:* verifikasi jalur API secara langsung. *Cara kerja:* Pydantic memvalidasi payload, pgvector mengembalikan top-K, server merangkai jawaban ekstraktif. *Baca hasil:* HTTP 200, penanda `[S1]`, tiga sumber dengan nama file dan jarak; gambar dari respons server lokal.
+
+![POST RAG tidak valid mendapat 422](screenshots/11_api_422_respons.png)
+
+*Command:* POST `{"question":"uji","top_k":0}` ke `/api/ask`. *Fungsi:* memperlihatkan validasi negatif. *Cara kerja:* Pydantic menolak parameter sebelum pencarian DB. *Baca hasil:* HTTP 422, `loc=body.top_k`, minimal 1; gambar dari respons server lokal.
 
 **E. Benchmark.** `.\.venv\Scripts\python benchmark.py --repeat 5` menghasilkan **15 baris** di `benchmarks.jsonl` serta ringkasan p50 median/p95 nearest-rank. Uji contoh pada komputer verifikasi menghasilkan p50 61,51 ms, p95 189,26 ms; angka itu tidak menjadi syarat nilai. Diskusikan cold/warm, ukuran dokumen, dan jumlah pengulangan. File JSONL diabaikan Git.
 
@@ -55,11 +73,11 @@ Komputer verifikasi menjalankan image `pgvector/pgvector:pg16` healthy, Python d
 
 ![Keluaran Docker Compose Lab 11](screenshots/11_docker_output.png)
 
-*Command:* `docker compose ps`. *Fungsi:* memverifikasi keadaan yang sama melalui terminal. *Cara kerja:* Compose membaca container, image, status, port. *Baca hasil:* pgvector healthy, port 127.0.0.1:5433→5432; output aktual ditata ulang.
+*Command:* `docker compose ps`. *Fungsi:* memverifikasi keadaan yang sama melalui terminal. *Cara kerja:* Compose membaca container, image, status, port. *Baca hasil:* pgvector healthy, port 127.0.0.1:5433→5432; output aktual ditata ulang, bukan screenshot terminal langsung.
 
 ![Keluaran ingest korpus bawaan](screenshots/11_ingest_output.png)
 
-*Command:* `.\.venv\Scripts\python rag.py ingest`. *Fungsi:* membuat indeks. *Cara kerja:* file Markdown menjadi 6 chunk/vektor dan metadata indeks. *Baca hasil:* 3 file, 6 chunk, hashing 384, 500/50; keluaran aktual ditata ulang.
+*Command:* `.\.venv\Scripts\python rag.py ingest`. *Fungsi:* membuat indeks. *Cara kerja:* file Markdown menjadi 6 chunk/vektor dan metadata indeks. *Baca hasil:* 3 file, 6 chunk, hashing 384, 500/50; keluaran aktual ditata ulang, bukan screenshot terminal langsung.
 
 ![Dokumentasi OpenAPI lokal](screenshots/11_openapi_aktual.png)
 
