@@ -83,4 +83,3 @@ Rujukan: [pgvector index usage](https://github.com/pgvector/pgvector#troubleshoo
 `benchmark.py` mengulang tiga pertanyaan lima kali secara default (15 sampel) dan mencetak p50 median serta p95 nearest-rank. Setelah Docker, ingest, dan Uvicorn hidup, jalankan PowerShell `.\.venv\Scripts\python -B tests\challenge.py` atau Bash `.venv/bin/python -B tests/challenge.py`; hasil uji **10 PASS, 0 FAIL**.
 
 Panduan: [modul mahasiswa dan kunci](MODUL_MAHASISWA.md), [panduan dosen](PANDUAN_DOSEN.md), [panduan Git](PANDUAN_GIT.md). Screenshot Docker Desktop, web, API, dan perintah berada di `screenshots/`.
-

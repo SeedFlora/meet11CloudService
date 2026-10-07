@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="id">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cloud Notes RAG</title>
+<style>
+body{font:16px Arial,sans-serif;background:#f2f6fb;color:#152640;margin:0}main{max-width:840px;margin:32px auto;padding:0 18px}h1{margin-bottom:5px}.muted{color:#526780}#messages{background:white;border:1px solid #d7e1ec;border-radius:12px;padding:18px;min-height:260px}.turn{padding:12px;border-bottom:1px solid #e6edf4;white-space:pre-wrap}.turn:last-child{border:0}.role{font-weight:bold}form{display:flex;gap:8px;margin-top:16px}input{flex:1;padding:11px;border:1px solid #aabbd0;border-radius:8px}button{background:#1256a0;color:white;border:0;border-radius:8px;padding:11px 18px;cursor:pointer}button:disabled{opacity:.6}.sources{color:#426486;font-size:.9rem;margin-top:8px}
+</style>
+<main><h1>Cloud Notes RAG</h1><p class="muted">Jawaban berbasis dokumen kelas. Sitasi merujuk ke file dan bagian yang diambil pgvector.</p><div id="messages" aria-live="polite"></div><form id="chat"><input id="question" placeholder="Contoh: Mengapa RLS penting untuk Supabase?" required maxlength="1000"><button id="send">Kirim</button></form></main>
+<script>
+const messages = document.querySelector('#messages');
+const form = document.querySelector('#chat');
+const input = document.querySelector('#question');
+const send = document.querySelector('#send');
+const history = [];
+function addTurn(role, content, sources=[]) {
+  const box=document.createElement('div'); box.className='turn';
+  const name=document.createElement('div'); name.className='role'; name.textContent=role;
+  const text=document.createElement('div'); text.textContent=content;
+  box.append(name,text);
+  if(sources.length){const note=document.createElement('div');note.className='sources';note.textContent=sources.map(s=>`[${s.ref}] ${s.source_file} bagian ${s.chunk_index} (jarak ${s.distance})`).join(' · ');box.append(note)}
+  messages.append(box); messages.scrollTop=messages.scrollHeight;
+}
+form.addEventListener('submit', async event=>{
+  event.preventDefault();const question=input.value.trim();if(!question)return;
+  addTurn('Anda',question);input.value='';send.disabled=true;
+  try{const response=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,history:history.slice(-6)})});const data=await response.json();if(!response.ok)throw new Error(data.detail||'Permintaan gagal');addTurn('Asisten',data.answer,data.sources);history.push({role:'user',content:question},{role:'assistant',content:data.answer})}
+  catch(error){addTurn('Sistem',String(error))}finally{send.disabled=false;input.focus()}
+});
+</script>
+</html>

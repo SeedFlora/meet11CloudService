@@ -1,0 +1,28 @@
+name: cloud-notes-rag
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: cloudrag
+      POSTGRES_USER: raguser
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - rag_data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U raguser -d cloudrag"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  rag_data:
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt

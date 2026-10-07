@@ -1,0 +1,6 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+secrets/db_password.txt
+benchmarks.jsonl
