@@ -20,15 +20,17 @@ Slide praktikum sesi 11 juga memperlihatkan rancangan cloud dengan TypeScript, S
 
 ## 1. Siapkan database dan Python
 
-Dari root repo Lab 11:
+Gunakan **Python 3.10 atau lebih baru**: `rag.py` memakai anotasi union tipe yang memerlukan runtime tersebut. Dari root repo Lab 11:
 
 PowerShell:
 
 ```powershell
+python --version
 Copy-Item .\secrets\db_password.txt.example .\secrets\db_password.txt
 Copy-Item .\.env.example .\.env
 docker compose up -d --wait
 python -m venv .venv
+.\.venv\Scripts\python -m pip --version
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python rag.py ingest
 .\.venv\Scripts\python rag.py ask "Mengapa RLS penting untuk Supabase?"
@@ -38,15 +40,19 @@ python -m venv .venv
 Bash/WSL:
 
 ```bash
+python3 --version
 cp secrets/db_password.txt.example secrets/db_password.txt
 cp .env.example .env
 docker compose up -d --wait
 python3 -m venv .venv
+.venv/bin/python -m pip --version
 .venv/bin/python -m pip install -r requirements.txt
 .venv/bin/python rag.py ingest
 .venv/bin/python rag.py ask "Mengapa RLS penting untuk Supabase?"
 .venv/bin/python -m uvicorn app:app --host 127.0.0.1 --port 8011
 ```
+
+Periksa versi Python minimal 3.10 dan pip menunjuk `.venv` repo ini sebelum instalasi. Jika runtime lebih tua atau command tidak tersedia, siapkan runtime lingkungan praktik yang sesuai dahulu.
 
 `/health` memeriksa proses API; `/ready` juga memeriksa database, jumlah chunk, dan mode embedding (503 bila belum siap). Buka `http://127.0.0.1:8011`. Coba percakapan dan lihat `[S1]` serta nama file/bagian pada sumber. `http://127.0.0.1:8011/docs` membuka dokumentasi API. Uji POST dari PowerShell:
 
@@ -65,6 +71,8 @@ curl -fsS http://127.0.0.1:8011/api/ask -H 'Content-Type: application/json' -d '
 `rag.py ingest` membaca `.md`/`.txt` dalam `docs/` lalu mengganti indeks secara transaksional. Mode default `hash` membuat vector hashing 384 dimensi tanpa model download. Ini **baseline leksikal**, bukan semantic embedding produksi. Pemotong default memakai **500 token demo + 50 overlap**: token demo dihitung dengan regex Unicode (kata dan tanda baca), sehingga **tidak identik** dengan token model LLM. Output ingest menampilkan jumlah bagian, chunk size, dan overlap. Tambahkan dokumen sendiri yang aman untuk dibagikan, indeks ulang, lalu amati perubahan jawaban.
 
 Untuk semantic search yang sungguh memakai model, instal `requirements-semantic.txt`, ubah `EMBED_MODE=semantic` di `.env`, lalu jalankan ingest lagi. Mode ini memakai `sentence-transformers/all-MiniLM-L6-v2`, yang menghasilkan 384 dimensi dan membatasi input sekitar 256 word pieces. Kode memakai tokenizer model dan menetapkan 254 token sebagai batas awal chunk, lalu memendekkan chunk lagi bila teks hasil decode/re-encode bertambah token, dengan overlap sampai 50 tanpa celah. Ini sengaja berbeda dari angka 500 agar teks tidak terpotong diam-diam. Model tersebut terutama untuk bahasa Inggris; evaluasi pertanyaan bahasa Indonesia secara kritis.
+
+Python 3.10+ juga memenuhi minimum [Sentence Transformers 5.7.0](https://pypi.org/project/sentence-transformers/5.7.0/) yang diperiksa dalam rentang dependency semantik. Paket dan unduhan model opsional perlu dipasang terpisah; baseline hash tidak memerlukannya.
 
 `initdb/01_rag.sql` membuat HNSW dengan `vector_cosine_ops`. Fungsi SQL `match_documents` melakukan `ORDER BY embedding <=> query_embedding ASC LIMIT ...`. Urutan jarak naik dan operator langsung memungkinkan planner memakai indeks ketika ukuran tabel membenarkannya. Pada tiga dokumen kecil, PostgreSQL mungkin memilih sequential scan karena lebih murah; itu bukan bukti indeks rusak. Periksa dengan `EXPLAIN` saat dataset lebih besar.
 

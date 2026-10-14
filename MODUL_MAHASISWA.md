@@ -14,20 +14,22 @@ Slide sesi 11 memakai contoh TypeScript/Next.js untuk mendiskusikan integrasi cl
 
 ## Persiapan dan jalur hash lokal
 
-Pastikan Docker/Compose berjalan, port 5433 dan 8011 bebas, dan Python 3 tersedia. Dari root repo Lab 11 pada PowerShell:
+Pastikan Docker/Compose berjalan, port 5433 dan 8011 bebas, dan **Python 3.10 atau lebih baru** tersedia. Kode `rag.py` memakai anotasi union tipe yang memerlukan Python 3.10; minimum salah satu dependency saja belum cukup untuk seluruh aplikasi. Dari root repo Lab 11 pada PowerShell:
 
 ```powershell
+python --version
 Copy-Item .\secrets\db_password.txt.example .\secrets\db_password.txt
 Copy-Item .\.env.example .\.env
 docker compose up -d --wait
 python -m venv .venv
+.\.venv\Scripts\python -m pip --version
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python rag.py ingest
 .\.venv\Scripts\python rag.py ask "Mengapa RLS penting untuk Supabase?"
 .\.venv\Scripts\python -m uvicorn app:app --host 127.0.0.1 --port 8011
 ```
 
-Pada Bash/WSL salin dengan `cp`, buat venv memakai `python3 -m venv .venv`, lalu jalankan `.venv/bin/python`. Jika `.env` atau password lokal sudah ada, periksa sebelum menimpa. Buka `http://127.0.0.1:8011` dan `/docs`.
+Pada Bash/WSL periksa `python3 --version`, salin dengan `cp`, buat venv memakai `python3 -m venv .venv`, lalu jalankan `.venv/bin/python`, termasuk `.venv/bin/python -m pip --version`. **Checkpoint runtime:** Python minimal 3.10 dan pip menunjuk `.venv` repo ini. Jika runtime lebih tua atau command tidak tersedia, siapkan runtime yang sesuai di lingkungan praktik dahulu. Jika `.env` atau password lokal sudah ada, periksa sebelum menimpa. Buka `http://127.0.0.1:8011` dan `/docs`.
 
 ## Praktik bertahap
 
@@ -94,6 +96,8 @@ Di Bash, gunakan `curl -i http://127.0.0.1:8011/api/ask -H 'Content-Type: applic
 * **Langkah:** Tambahkan satu file aman ke `docs/`, lalu jalankan ulang `python rag.py ingest`. **Fungsi:** Menguji pembaruan korpus RAG. **Cara kerja:** Ingest membaca file baru, memecahnya menjadi chunk, dan menambah/memperbarui indeks pgvector. **Baca hasil:** Bandingkan daftar file dan total chunk; contoh naik dari 3 file/6 chunk ke 4 file/7 chunk.
 
 **Mode semantik opsional lokal:** instal `requirements-semantic.txt`, ubah `EMBED_MODE=semantic` hanya di `.env`, lalu ingest ulang. MiniLM memiliki batas 256 token model; kode menyesuaikan ukuran chunk setelah decode/re-encode agar tidak memotong teks diam-diam. Pada dokumen contoh uji paket menghasilkan 20 chunk semantik, seluruhnya dalam batas. Model pertama kali diunduh dan membutuhkan RAM/disk/waktu lebih besar. Bandingkan hash vs semantik dengan pertanyaan yang sama, kemudian kembalikan mode hash dan ingest lagi bila kelas melanjutkan baseline.
+
+Python 3.10+ pada jalur utama juga memenuhi minimum [Sentence Transformers 5.7.0](https://pypi.org/project/sentence-transformers/5.7.0/) yang diperiksa dalam rentang `requirements-semantic.txt`. Kebutuhan unduhan model serta RAM/disk tetap lebih besar daripada mode hash; langkah baseline tidak otomatis memasang dependency semantik.
 
 ## Pertanyaan untuk laporan
 
