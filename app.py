@@ -47,3 +47,5 @@ def ask(payload: AskInput):
         return answer_question(payload.question, payload.top_k, [turn.model_dump() for turn in payload.history])
     except (RuntimeError, ValueError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except (DatabaseError, OSError) as exc:
+        raise HTTPException(status_code=503, detail="Database RAG belum siap. Periksa Compose dan /ready.") from exc

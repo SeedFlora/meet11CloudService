@@ -109,15 +109,15 @@ def vector_literal(values: list[float]) -> str:
 
 
 def connect():
-    secret_path = Path(os.getenv("DB_PASSWORD_FILE", "secrets/db_password.txt"))
-    if not secret_path.is_absolute():
-        secret_path = ROOT / secret_path
+    password = os.getenv("DB_PASSWORD", "").strip()
+    if not password:
+        raise RuntimeError("DB_PASSWORD belum diisi. Salin .env.example menjadi .env.")
     return psycopg.connect(
         host=os.getenv("DB_HOST", "127.0.0.1"),
         port=int(os.getenv("DB_PORT", "5433")),
         dbname=os.getenv("DB_NAME", "cloudrag"),
         user=os.getenv("DB_USER", "raguser"),
-        password=secret_path.read_text(encoding="utf-8").strip(),
+        password=password,
         row_factory=dict_row,
     )
 

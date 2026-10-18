@@ -18,53 +18,9 @@ Slide menghubungkan konsep, kasus kerja, bacaan/video resmi, dan langkah lab. Se
 
 Slide praktikum sesi 11 juga memperlihatkan rancangan cloud dengan TypeScript, Supabase, Groq, dan Next.js. Untuk praktik kelas yang dapat dijalankan dari folder ini, gunakan kode Python `rag.py`, `app.py`, `benchmark.py`, dan `index.html` di bawah. Contoh TypeScript pada slide dipakai untuk membahas rancangan integrasi cloud opsional; file TypeScript tersebut tidak disertakan sebagai aplikasi siap jalan.
 
-## 1. Siapkan database dan Python
+## Mulai praktikum lokal
 
-Gunakan **Python 3.10 atau lebih baru**: `rag.py` memakai anotasi union tipe yang memerlukan runtime tersebut. Dari root repo Lab 11:
-
-PowerShell:
-
-```powershell
-python --version
-Copy-Item .\secrets\db_password.txt.example .\secrets\db_password.txt
-Copy-Item .\.env.example .\.env
-docker compose up -d --wait
-python -m venv .venv
-.\.venv\Scripts\python -m pip --version
-.\.venv\Scripts\python -m pip install -r requirements.txt
-.\.venv\Scripts\python rag.py ingest
-.\.venv\Scripts\python rag.py ask "Mengapa RLS penting untuk Supabase?"
-.\.venv\Scripts\python -m uvicorn app:app --host 127.0.0.1 --port 8011
-```
-
-Bash/WSL:
-
-```bash
-python3 --version
-cp secrets/db_password.txt.example secrets/db_password.txt
-cp .env.example .env
-docker compose up -d --wait
-python3 -m venv .venv
-.venv/bin/python -m pip --version
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python rag.py ingest
-.venv/bin/python rag.py ask "Mengapa RLS penting untuk Supabase?"
-.venv/bin/python -m uvicorn app:app --host 127.0.0.1 --port 8011
-```
-
-Periksa versi Python minimal 3.10 dan pip menunjuk `.venv` repo ini sebelum instalasi. Jika runtime lebih tua atau command tidak tersedia, siapkan runtime lingkungan praktik yang sesuai dahulu.
-
-`/health` memeriksa proses API; `/ready` juga memeriksa database, jumlah chunk, dan mode embedding (503 bila belum siap). Buka `http://127.0.0.1:8011`. Coba percakapan dan lihat `[S1]` serta nama file/bagian pada sumber. `http://127.0.0.1:8011/docs` membuka dokumentasi API. Uji POST dari PowerShell:
-
-```powershell
-Invoke-RestMethod http://127.0.0.1:8011/api/ask -Method Post -ContentType application/json -Body '{"question":"Apa perbedaan image dan container?","top_k":3}'
-```
-
-Atau bash:
-
-```bash
-curl -fsS http://127.0.0.1:8011/api/ask -H 'Content-Type: application/json' -d '{"question":"Apa perbedaan image dan container?","top_k":3}'
-```
+Ikuti [modul mahasiswa langkah demi langkah](MODUL_MAHASISWA.md). Modul memakai **PowerShell, clone baru, satu perintah tiap langkah**, hasil yang diharapkan, dan screenshot contoh. Semua langkah utama berjalan lokal. Tidak ada laporan atau push terpisah yang wajib dikumpulkan.
 
 ## 2. Pahami pipeline
 
