@@ -1,0 +1,14 @@
+# Data unduhan: buat ulang dengan  python download_data.py
+*/data/
+*/contoh/
+# Model hasil latih: buat ulang dengan  python train.py
+*/model.joblib
+*/model.pt
+*/classifier.joblib
+*/prediksi_uji.csv
+# Lingkungan & cache
+.venv/
+__pycache__/
+*.pyc
+.gradio/
+flagged/

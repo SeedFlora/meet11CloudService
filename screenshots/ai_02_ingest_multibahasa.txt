@@ -1,0 +1,10 @@
+$ .venv/bin/python rag.py ingest
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 5772.00it/s]
+{
+  "files": 3,
+  "chunks": 25,
+  "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "chunk_size": 126,
+  "overlap": 31
+}

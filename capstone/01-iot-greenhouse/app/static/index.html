@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Greenhouse · IoT + ML</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  body{margin:0;font:15px system-ui,Segoe UI,Arial,sans-serif;background:#f1f5f9;color:#0f172a}
+  header{background:#0f3d2e;color:#fff;padding:14px 24px;display:flex;align-items:center;gap:16px}
+  header h1{font-size:20px;margin:0}
+  .pill{padding:5px 12px;border-radius:999px;font-weight:700;font-size:13px}
+  .ok{background:#bbf7d0;color:#14532d}.ml{background:#fed7aa;color:#9a3412}.bad{background:#fecaca;color:#991b1b}.info{background:#e2e8f0;color:#334155}
+  main{padding:18px 24px;max-width:1180px;margin:auto}
+  .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px}
+  .card b{display:block;font-size:24px;margin-top:4px}.card small{color:#64748b}
+  .row{display:grid;grid-template-columns:2.2fr 1fr;gap:14px;margin-top:14px}
+  .panel{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px}
+  button{border:0;border-radius:8px;padding:9px 12px;margin:4px 4px 0 0;font-weight:600;cursor:pointer;background:#e2e8f0}
+  button.on{outline:3px solid #0f3d2e}
+  table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:5px 4px;border-bottom:1px solid #f1f5f9;text-align:left}
+  .bar{height:8px;background:#e2e8f0;border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:#16a34a}
+  ul{padding-left:16px;margin:6px 0;font-size:13px}li{margin-bottom:4px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Smart Greenhouse · IoT + ML</h1>
+  <span id="status" class="pill info">menunggu data</span>
+  <span id="mqtt" class="pill info">MQTT</span>
+  <span style="margin-left:auto;font-size:13px;opacity:.85">sensor → MQTT → model anomali + prakiraan → dashboard</span>
+</header>
+<main>
+  <div class="cards">
+    <div class="card"><small>Suhu udara</small><b id="suhu">-</b></div>
+    <div class="card"><small>Kelembapan udara</small><b id="lembap">-</b></div>
+    <div class="card"><small>Kelembapan tanah</small><b id="tanah">-</b></div>
+    <div class="card"><small>Skor anomali (&gt; 1 = aneh)</small><b id="skor">-</b></div>
+    <div class="card"><small>Prakiraan suhu 60 s</small><b id="prak">-</b><small id="eta"></small></div>
+  </div>
+  <div class="row">
+    <div class="panel"><canvas id="grafik" height="120"></canvas></div>
+    <div class="panel">
+      <div id="warm"><small id="warmjudul">Model belajar pola normal</small><div class="bar"><i id="warmbar" style="width:0%"></i></div><small id="warmtxt"></small></div>
+      <h3 style="margin:10px 0 4px">Simulasi gangguan</h3>
+      <div id="tombol"></div>
+      <h3 style="margin:12px 0 4px">Waktu deteksi (detik)</h3>
+      <table><thead><tr><th>Skenario</th><th>ML</th><th>Aturan</th></tr></thead><tbody id="deteksi"></tbody></table>
+      <h3 style="margin:12px 0 4px">Alarm terbaru</h3>
+      <ul id="alerts"></ul>
+    </div>
+  </div>
+</main>
+<script>
+const SKENARIO = [["normal","Normal"],["kipas_mati","Kipas mati"],["sensor_rusak","Sensor rusak"],["pompa_bocor","Pompa bocor"]];
+let aktif = "normal";
+document.getElementById("tombol").innerHTML = SKENARIO.map(([k,l]) => `<button data-k="${k}">${l}</button>`).join("");
+document.querySelectorAll("#tombol button").forEach(b => b.onclick = async () => {
+  aktif = b.dataset.k;
+  await fetch("/api/skenario", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({fault: aktif})});
+});
+const chart = new Chart(document.getElementById("grafik"), {
+  type: "line",
+  data: {labels: [], datasets: [
+    {label:"Suhu (°C)", data:[], borderColor:"#dc2626", yAxisID:"y", pointRadius:[], pointBackgroundColor:"#7f1d1d", borderWidth:2, tension:.2},
+    {label:"Kelembapan udara (%)", data:[], borderColor:"#2563eb", yAxisID:"y2", pointRadius:0, borderWidth:1.5, tension:.2},
+    {label:"Kelembapan tanah (%)", data:[], borderColor:"#16a34a", yAxisID:"y2", pointRadius:0, borderWidth:1.5, tension:.2}]},
+  options: {animation:false, interaction:{mode:"index", intersect:false},
+    scales: {y:{position:"left", title:{display:true, text:"°C"}}, y2:{position:"right", min:0, max:100, grid:{drawOnChartArea:false}, title:{display:true, text:"%"}}},
+    plugins: {legend:{position:"bottom"}, title:{display:true, text:"5 menit terakhir · titik merah = anomali menurut model"}}}
+});
+const jam = ts => new Date(ts * 1000).toLocaleTimeString("id-ID", {hour12:false});
+async function refresh() {
+  const s = await (await fetch("/api/state")).json();
+  document.getElementById("mqtt").textContent = s.mqtt ? "MQTT terhubung" : "MQTT putus";
+  document.getElementById("mqtt").className = "pill " + (s.mqtt ? "ok" : "bad");
+  if (!s.terakhir) return;
+  const t = s.terakhir;
+  document.getElementById("suhu").textContent = t.suhu.toFixed(1) + " °C";
+  document.getElementById("lembap").textContent = t.kelembapan.toFixed(0) + " %";
+  document.getElementById("tanah").textContent = t.tanah.toFixed(0) + " %";
+  document.getElementById("skor").textContent = t.skor === null ? (s.model_siap ? "isi jendela" : "belajar") : t.skor.toFixed(2);
+  const st = document.getElementById("status");
+  if (t.alarm_aturan) { st.textContent = "ALARM: melewati ambang"; st.className = "pill bad"; }
+  else if (t.alarm_ml) { st.textContent = "ANOMALI terdeteksi ML"; st.className = "pill ml"; }
+  else { st.textContent = s.model_siap ? "NORMAL" : "model belajar"; st.className = "pill " + (s.model_siap ? "ok" : "info"); }
+  if (s.prakiraan && !s.prakiraan.andal) {
+    document.getElementById("prak").textContent = "ditahan";
+    document.getElementById("eta").textContent = "data sedang anomali, prakiraan tidak dipercaya";
+  } else if (s.prakiraan) {
+    document.getElementById("prak").textContent = s.prakiraan.suhu_60s + " °C";
+    document.getElementById("eta").textContent = s.prakiraan.eta_batas_s !== null
+      ? `tembus ${s.batas_suhu} °C dalam ±${s.prakiraan.eta_batas_s} s` : `laju ${s.prakiraan.laju_per_menit} °C/menit`;
+  }
+  const [n, w] = s.warmup;
+  document.getElementById("warmbar").style.width = s.model_siap ? "100%" : (100 * n / w) + "%";
+  document.getElementById("warmjudul").textContent = s.model_siap ? s.model.metode : "Model belajar pola normal";
+  document.getElementById("warmtxt").textContent = s.model_siap ? `siap · ${s.model.n_latih} data latih · ${s.model.sumber}` : `${n}/${w} detik data normal (warm-up live)`;
+  chart.data.labels = s.seri.map(x => jam(x.ts));
+  chart.data.datasets[0].data = s.seri.map(x => x.suhu);
+  chart.data.datasets[0].pointRadius = s.seri.map(x => x.anomali ? 3.5 : 0);
+  chart.data.datasets[1].data = s.seri.map(x => x.kelembapan);
+  chart.data.datasets[2].data = s.seri.map(x => x.tanah);
+  chart.update();
+  const deteksi = document.getElementById("deteksi");
+  deteksi.replaceChildren();
+  for (const e of s.deteksi) {
+    const row = deteksi.insertRow();
+    for (const nilai of [e.skenario, e.ml ?? "-", e.aturan ?? "-"]) {
+      row.insertCell().textContent = nilai;
+    }
+  }
+  if (!s.deteksi.length) {
+    const cell = deteksi.insertRow().insertCell();
+    cell.colSpan = 3;
+    cell.textContent = "belum ada gangguan";
+  }
+  const alerts = document.getElementById("alerts");
+  alerts.replaceChildren();
+  for (const a of s.alerts) {
+    const li = document.createElement("li");
+    const label = document.createElement("b");
+    label.textContent = `${jam(a.ts)} ${a.jenis}`;
+    li.append(label, ` ${a.pesan}`);
+    alerts.append(li);
+  }
+  document.querySelectorAll("#tombol button").forEach(b => b.classList.toggle("on", b.dataset.k === aktif));
+}
+setInterval(refresh, 1000);
+refresh();
+</script>
+</body>
+</html>

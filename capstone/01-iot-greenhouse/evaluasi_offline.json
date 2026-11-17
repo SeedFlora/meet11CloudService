@@ -1,0 +1,63 @@
+{
+  "data_latih": "normal_10menit.csv",
+  "n_latih": 540,
+  "uji": 20,
+  "jam_normal_diuji": 9.67,
+  "alarm": "nyala 3 titik anomali, padam 10 titik normal",
+  "hasil": {
+    "ML (EllipticEnvelope)": {
+      "alarm_palsu_per_jam": 0.0,
+      "kipas_mati": {
+        "median_s": 13.5,
+        "p90_s": 20.0,
+        "terlewat": 0
+      },
+      "pompa_bocor": {
+        "median_s": 6.0,
+        "p90_s": 6.0,
+        "terlewat": 0
+      },
+      "sensor_rusak": {
+        "median_s": 6.0,
+        "p90_s": 10.1,
+        "terlewat": 0
+      }
+    },
+    "Isolation Forest": {
+      "alarm_palsu_per_jam": 0.0,
+      "kipas_mati": {
+        "median_s": 23.5,
+        "p90_s": 79.4,
+        "terlewat": 2
+      },
+      "pompa_bocor": {
+        "median_s": 41.0,
+        "p90_s": 60.5,
+        "terlewat": 14
+      },
+      "sensor_rusak": {
+        "median_s": 8.0,
+        "p90_s": 44.1,
+        "terlewat": 8
+      }
+    },
+    "Aturan ambang": {
+      "alarm_palsu_per_jam": 0.0,
+      "kipas_mati": {
+        "median_s": 57.0,
+        "p90_s": 90.2,
+        "terlewat": 0
+      },
+      "pompa_bocor": {
+        "median_s": 45.0,
+        "p90_s": 47.0,
+        "terlewat": 0
+      },
+      "sensor_rusak": {
+        "median_s": 1.0,
+        "p90_s": 3.0,
+        "terlewat": 0
+      }
+    }
+  }
+}

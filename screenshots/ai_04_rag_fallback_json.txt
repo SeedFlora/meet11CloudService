@@ -1,0 +1,15 @@
+# Ollama dimatikan; API RAG tetap menjawab dari dokumen
+# (output JSON dirapikan agar terbaca di slide)
+$ curl -s -X POST http://127.0.0.1:8011/api/ask -H 'Content-Type: application/json' -d '{"question":"Apa beda image dan container di Docker?"}'
+{
+  "answer": "Container adalah instans proses terisolasi dari image tersebut. [S1] Menghentikan container tidak otomatis menghapus image; menghapus container tidak otomatis menghapus volume. [S1]",
+  "sources": [
+    {"ref": "S1", "source_file": "docker_operations.md", "chunk_index": 0, "distance": 0.3636},
+    {"ref": "S2", "source_file": "docker_operations.md", "chunk_index": 1, "distance": 0.538},
+    {"ref": "S3", "source_file": "docker_operations.md", "chunk_index": 3, "distance": 0.5805}
+  ],
+  "mode": "extractive-fallback",
+  "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "latency_ms": 49.29,
+  "llm_error": "URLError: <urlopen error [Errno 111] Connection refused>"
+}

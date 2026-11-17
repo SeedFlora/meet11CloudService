@@ -1,0 +1,30 @@
+# Smart Greenhouse IoT + ML: sensor (ESP32 virtual) -> MQTT -> deteksi anomali + prakiraan -> dashboard web.
+# Sama di Windows/macOS/Linux:  docker compose up -d --build   lalu buka http://localhost:8070
+name: iot-greenhouse
+
+services:
+  broker:
+    image: eclipse-mosquitto:2.0
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    ports:
+      - "${MQTT_BIND_IP:-127.0.0.1}:${MQTT_HOST_PORT:-1883}:1883"
+
+  device:                  # ESP32 virtual; ganti dengan ESP32 asli (folder esp32/) bila punya hardware
+    build: ./device
+    environment:
+      MQTT_HOST: broker
+      DEVICE_ID: gh-01
+      INTERVAL_S: "1"
+    depends_on: [broker]
+    restart: unless-stopped
+
+  app:                     # FastAPI + scikit-learn + dashboard
+    build: ./app
+    environment:
+      MQTT_HOST: broker
+      WARMUP: "600"        # hanya dipakai bila app/riwayat/normal_10menit.csv tidak ada (latih dari data live)
+    ports:
+      - "127.0.0.1:${GREENHOUSE_PORT:-8070}:8000"
+    depends_on: [broker]
+    restart: unless-stopped

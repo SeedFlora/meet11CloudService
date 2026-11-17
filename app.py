@@ -37,8 +37,10 @@ def health():
 def ready():
     try:
         return readiness()
-    except (RuntimeError, OSError, DatabaseError) as exc:
+    except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except (OSError, DatabaseError) as exc:
+        raise HTTPException(status_code=503, detail="Database RAG belum siap. Periksa Compose dan konfigurasi database.") from exc
 
 
 @app.post("/api/ask")

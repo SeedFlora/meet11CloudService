@@ -1,0 +1,8 @@
+{
+  "model": "openai/whisper-small",
+  "n_klip": 20,
+  "durasi_audio_s": 96.1,
+  "waktu_proses_s": 214.6,
+  "real_time_factor": 2.23,
+  "wer": 0.302
+}

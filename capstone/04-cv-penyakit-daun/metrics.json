@@ -1,0 +1,28 @@
+{
+  "hasil_uji": {
+    "histogram_warna_logreg": {
+      "akurasi": 0.614,
+      "macro_f1": 0.602
+    },
+    "efficientnet_b0_logreg": {
+      "akurasi": 0.879,
+      "macro_f1": 0.885
+    }
+  },
+  "kelas": [
+    "Bacterial_spot",
+    "Early_blight",
+    "Late_blight",
+    "Leaf_Mold",
+    "Septoria_leaf_spot",
+    "Spider_mites Two-spotted_spider_mite",
+    "Target_Spot",
+    "Tomato_Yellow_Leaf_Curl_Virus",
+    "Tomato_mosaic_virus",
+    "healthy"
+  ],
+  "n_latih": 996,
+  "n_uji": 428,
+  "foto_per_detik_cpu": 33.0,
+  "backbone": "efficientnet_b0.ra_in1k"
+}

@@ -1,0 +1,37 @@
+{
+  "macro_f1": {
+    "baseline_mayoritas": 0.246,
+    "tfidf_logreg": 0.851,
+    "embedding_logreg": 0.817,
+    "embedding_detik": 190.2
+  },
+  "f1_per_kelas": {
+    "negative": 0.86,
+    "neutral": 0.766,
+    "positive": 0.927
+  },
+  "confusion_matrix": [
+    [
+      344,
+      17,
+      33
+    ],
+    [
+      18,
+      105,
+      8
+    ],
+    [
+      44,
+      21,
+      670
+    ]
+  ],
+  "labels": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "n_latih": 11000,
+  "n_validasi": 1260
+}

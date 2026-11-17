@@ -1,0 +1,70 @@
+{
+  "hasil_uji": {
+    "baseline_mayoritas (semua lulus)": {
+      "akurasi": 0.667,
+      "recall_berisiko": 0.0,
+      "presisi_berisiko": 0.0,
+      "f1_berisiko": 0.0
+    },
+    "baseline_aturan (G1 < 10)": {
+      "akurasi": 0.818,
+      "recall_berisiko": 0.758,
+      "presisi_berisiko": 0.714,
+      "f1_berisiko": 0.735
+    },
+    "random_forest": {
+      "akurasi": 0.818,
+      "recall_berisiko": 0.818,
+      "presisi_berisiko": 0.692,
+      "f1_berisiko": 0.75
+    }
+  },
+  "cv_f1_mean": 0.769,
+  "cv_f1_std": 0.051,
+  "confusion_matrix": [
+    [
+      54,
+      12
+    ],
+    [
+      6,
+      27
+    ]
+  ],
+  "fitur_penting": [
+    [
+      "G1",
+      0.3776
+    ],
+    [
+      "schoolsup",
+      0.0229
+    ],
+    [
+      "famsup",
+      0.0107
+    ],
+    [
+      "famsize",
+      0.0106
+    ],
+    [
+      "reason",
+      0.0057
+    ],
+    [
+      "romantic",
+      0.0054
+    ],
+    [
+      "absences",
+      0.0038
+    ],
+    [
+      "address",
+      0.0031
+    ]
+  ],
+  "n_siswa": 395,
+  "n_uji": 99
+}
